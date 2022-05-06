@@ -23,12 +23,18 @@ async function run() {
 
 
         //post data to database...
-        app.post('/books', async (req, res) => {
+        app.post('/uploadBook', async (req, res) => {
             const newBooks = req.body;
             const result = await booksCollection.insertOne(newBooks);
             //res.send(result);
             res.send({ success: 'Upload successfully' })
         });
+
+        //get all data from database...
+        app.get('/allBooks', async (req, res) => {
+            const allBooks = await booksCollection.find({}).toArray();
+            res.send(allBooks);
+        })
 
     }
     finally {
