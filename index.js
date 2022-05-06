@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config()
 const port = process.env.PORT || 5000;
@@ -20,8 +20,6 @@ async function run() {
         const booksCollection = client.db("booksWarehouse").collection("books");
         console.log('db is connected');
 
-
-
         //post data to database...
         app.post('/uploadBook', async (req, res) => {
             const newBooks = req.body;
@@ -34,7 +32,15 @@ async function run() {
         app.get('/allBooks', async (req, res) => {
             const allBooks = await booksCollection.find({}).toArray();
             res.send(allBooks);
-        })
+        });
+
+        //get data by id from database
+        app.get('/book/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const book = await booksCollection.findOne(query);
+            res.send(book);
+        });
 
     }
     finally {
