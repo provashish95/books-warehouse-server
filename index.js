@@ -41,6 +41,20 @@ async function run() {
             const book = await booksCollection.findOne(query);
             res.send(book);
         });
+        //update quantity api 
+        app.put('/updateQuantity/:id', async (req, res) => {
+            const id = req.params.id;
+            const data = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    quantity: data.updateQuantity
+                },
+            };
+            const result = await booksCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+        });
 
     }
     finally {
