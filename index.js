@@ -26,17 +26,22 @@ async function run() {
             const email = req.body;
             const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
             res.send({ token })
-            //const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
-            //res.send({ token })
         })
 
 
         //post data to database...
         app.post('/uploadBook', async (req, res) => {
             const newBooks = req.body;
-            const result = await booksCollection.insertOne(newBooks);
-            //res.send(result);
-            res.send({ success: 'Upload successfully' })
+            const tokenInfo = req.headers.authorization;
+            const [email, accessToken] = tokenInfo?.split(" ");
+            const decoded = verifyToken(accessToken);
+            //const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            if (email === decoded.email) {
+                const result = await booksCollection.insertOne(newBooks);
+                res.send({ success: 'Upload successfully' })
+            } else {
+                res.send({ success: 'Unauthorized Access' })
+            }
         });
 
         //get all data from database...
@@ -74,6 +79,17 @@ async function run() {
             result = await booksCollection.deleteOne(query);
             res.send(result);
         });
+        app.get('/myBooks', async (req, res) => {
+            const tokenInfo = req.headers.authorization;
+            const [email, accessToken] = tokenInfo?.split(" ");
+            const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            if (email === decoded.email) {
+                const orderInfo = await booksCollection.find({ email: email }).toArray();
+                res.send(orderInfo);
+            } else {
+                res.send({ success: 'failed' })
+            }
+        });
 
     }
     finally {
@@ -92,3 +108,18 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Port is:  ${port}`)
 });
+
+
+//verify token ........ function
+function verifyToken(token) {
+    let email;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            email = 'Invalid email'
+        }
+        if (decoded) {
+            email = decoded
+        }
+    });
+    return email;
+}
