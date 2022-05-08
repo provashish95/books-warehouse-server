@@ -19,6 +19,7 @@ async function run() {
     try {
         await client.connect();
         const booksCollection = client.db("booksWarehouse").collection("books");
+        const stationaryCollection = client.db("booksWarehouse").collection("stationaryItems");
         console.log('db is connected');
 
         //created token for access...
@@ -92,6 +93,28 @@ async function run() {
                 res.send({ success: 'failed' })
             }
         });
+
+        //add stationary items api 
+        app.post('/stationaryItem', async (req, res) => {
+            const stationaryItem = req.body;
+            const tokenInfo = req.headers.authorization;
+            const [email, accessToken] = tokenInfo?.split(" ");
+            const decoded = verifyToken(accessToken);
+            //const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            if (email === decoded.email) {
+                const result = await stationaryCollection.insertOne(stationaryItem);
+                res.send({ success: 'Upload successfully' })
+            } else {
+                res.send({ success: 'Unauthorized Access' })
+            }
+        });
+
+        //get all stationary items api 
+        app.get('/stationaryItems', async (req, res) => {
+            const allStationaryItems = await stationaryCollection.find({}).toArray();
+            res.send(allStationaryItems);
+        });
+
 
     }
     finally {
