@@ -79,6 +79,8 @@ async function run() {
             result = await booksCollection.deleteOne(query);
             res.send(result);
         });
+
+        //get data by email api
         app.get('/myBooks', async (req, res) => {
             const tokenInfo = req.headers.authorization;
             const [email, accessToken] = tokenInfo?.split(" ");
