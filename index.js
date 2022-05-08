@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 
@@ -19,6 +20,16 @@ async function run() {
         await client.connect();
         const booksCollection = client.db("booksWarehouse").collection("books");
         console.log('db is connected');
+
+        //created token for access...
+        app.post('/login', async (req, res) => {
+            const email = req.body;
+            const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+            res.send({ token })
+            //const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+            //res.send({ token })
+        })
+
 
         //post data to database...
         app.post('/uploadBook', async (req, res) => {
